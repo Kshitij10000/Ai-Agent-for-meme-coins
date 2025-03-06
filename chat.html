@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* CSS Variables and Reset */
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --primary-light: #818cf8;
+        --secondary: #22c55e;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --gray-light: #e2e8f0;
+        --gray: #94a3b8;
+        --accent: #14b8a6;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--light);
+        height: 100vh;
+        display: flex;
+        overflow: hidden;
+      }
+      
+      /* Sidebar Styling */
+      .sidebar {
+        width: 300px;
+        background: linear-gradient(135deg, var(--dark) 0%, #0f172a 100%);
+        color: var(--light);
+        padding: 25px;
+        overflow-y: auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+      .sidebar:hover {
+        width: 320px;
+      }
+      .logo-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .logo {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      }
+      .logo svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+      }
+      .brand-name {
+        font-weight: 700;
+        font-size: 1.4em;
+        background: linear-gradient(to right, var(--primary-light), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .sidebar h2 {
+        margin: 25px 0 15px;
+        font-size: 1.2em;
+        font-weight: 600;
+        color: var(--primary-light);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 8px;
+      }
+      .sidebar p {
+        font-size: 0.95em;
+        line-height: 1.5;
+        margin-top: 15px;
+      }
+      /* Data Sources Section */
+      .data-sources {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 25px;
+      }
+      .data-sources h3 {
+        font-size: 1em;
+        margin-bottom: 10px;
+        color: var(--accent);
+      }
+      .data-source-item {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        font-size: 0.95em;
+      }
+      .data-source-item svg {
+        min-width: 18px;
+        margin-right: 8px;
+        fill: var(--gray);
+      }
+      
+      /* Main Chat Area */
+      .main-chat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        background-color: var(--light);
+        position: relative;
+      }
+      .chat-header {
+        background: linear-gradient(to right, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+      }
+      .chat-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+      }
+      .chat-title svg {
+        margin-right: 10px;
+      }
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        background-color: var(--secondary);
+        border-radius: 50%;
+        margin-right: 8px;
+        position: relative;
+      }
+      .status-dot::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: var(--secondary);
+        opacity: 0.4;
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.4; }
+        50% { transform: scale(2); opacity: 0; }
+        100% { transform: scale(1); opacity: 0; }
+      }
+      .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: #f1f5f9;
+        padding-bottom: 100px;
+      }
+      .message {
+        margin-bottom: 15px;
+        display: flex;
+      }
+      .message.user {
+        justify-content: flex-end;
+      }
+      .message.bot {
+        justify-content: flex-start;
+      }
+      .message .message-bubble {
+        padding: 12px 16px;
+        max-width: 70%;
+        font-size: 1em;
+        line-height: 1.4;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-radius: 18px;
+      }
+      .message.user .message-bubble {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border-radius: 18px 18px 0 18px;
+      }
+      .message.bot .message-bubble {
+        background: #bdc3c7;
+        color: var(--dark);
+        border-radius: 18px 18px 18px 0;
+      }
+      
+      /* Chat Input */
+      .chat-input {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        background-color: white;
+        border-radius: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 6px;
+        border: 1px solid var(--gray-light);
+      }
+      .chat-input input[type="text"] {
+        flex: 1;
+        padding: 12px 18px;
+        border: none;
+        font-size: 1em;
+        border-radius: 30px 0 0 30px;
+        font-family: 'Inter', sans-serif;
+        color: var(--dark);
+      }
+      .chat-input button {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        color: white;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 0 30px 30px 0;
+        margin-left: 8px;
+        transition: background-color 0.2s;
+      }
+      .chat-input button:hover {
+        background: var(--primary-dark);
+      }
+      .chat-input input:focus, .chat-input button:focus {
+        outline: none;
+      }
+      
+      /* Loader Spinner */
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid var(--primary);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 10px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo-container">
+        <div class="logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
+        </div>
+        <div class="brand-name">CryptoChat</div>
+      </div>
+      <h2>How to Use</h2>
+      <p>
+        Welcome to the Crypto Chatbot!<br>
+        <strong>Instructions:</strong><br>
+        1. Type your cryptocurrency-related question in the chat box.<br>
+        2. The chatbot processes your query and returns an answer or recommendation.<br>
+        3. It accesses Google Search, Twitter, and a knowledge base of Fraudulent Coins.<br>
+        Enjoy exploring crypto insights!
+      </p>
+      <!-- Data Sources Section -->
+      <div class="data-sources">
+        <h3>Data Sources</h3>
+        <div class="data-source-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+          </svg>
+          Google Search
+        </div>
+        <div class="data-source-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+            <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"></path>
+          </svg>
+          Twitter
+        </div>
+        <div class="data-source-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"></path>
+          </svg>
+          Fraud Detection Database
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Chat Area -->
+    <div class="main-chat">
+      <div class="chat-header">
+        <div class="chat-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="white">
+            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path>
+          </svg>
+          Crypto Assistant
+        </div>
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          Online
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        {% for chat in chat_history %}
+          <div class="message {{ chat.sender|lower }}">
+            <div class="message-bubble">
+              <strong>{{ chat.sender }}:</strong> {{ chat.message }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <form class="chat-input" id="chat-form">
+        <input type="text" name="message" id="message-input" placeholder="Type your message..." autocomplete="off" required>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+    
+    <!-- JavaScript for Chat Functionality (unchanged) -->
+    <script>
+      const form = document.getElementById('chat-form');
+      const input = document.getElementById('message-input');
+      const chatMessages = document.getElementById('chat-messages');
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+        appendMessage('User', message);
+        input.value = '';
+
+        const loaderId = 'loader-' + Date.now();
+        appendMessage('Bot', `<span id="${loaderId}"><span class="spinner"></span><em id="loader-text-${loaderId}">Loading...</em></span>`);
+        
+        try {
+          const response = await fetch('/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+          });
+          const data = await response.json();
+          const loaderText = document.getElementById(`loader-text-${loaderId}`);
+          if (data.tool && loaderText) {
+            loaderText.innerHTML = "Using " + data.tool + "...";
+          }
+          setTimeout(() => {
+            removeLoader(loaderId);
+            appendMessage('Bot', data.bot);
+          }, data.tool ? 1500 : 1000);
+        } catch (error) {
+          removeLoader(loaderId);
+          appendMessage('Bot', 'Error: ' + error.message);
+        }
+      });
+
+      function appendMessage(sender, text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender.toLowerCase());
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.classList.add('message-bubble');
+        bubbleDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        messageDiv.appendChild(bubbleDiv);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function removeLoader(loaderId) {
+        const loader = document.getElementById(loaderId);
+        if (loader) {
+          loader.parentNode.remove();
+        }
+      }
+    </script>
+  </body>
+</html>
